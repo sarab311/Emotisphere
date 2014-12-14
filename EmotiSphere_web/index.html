@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>EmotiSphere</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom CSS -->
+    <link href="css/grayscale.css" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="font-awesome-4.2.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" rel="stylesheet" type="text/css">
+    <link href="http://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+
+<body id="page-top" data-spy="scroll" data-target=".navbar-fixed-top">
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-custom navbar-fixed-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-main-collapse">
+                    <i class="fa fa-bars"></i>
+                </button>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse navbar-right navbar-main-collapse">
+                <ul class="nav navbar-nav">
+                    <!-- Hidden li included to remove active class from about link when scrolled up past about section -->
+                    <li class="hidden">
+                        <a href="#page-top"></a>
+                    </li>
+                    <li>
+                        <a class="page-scroll" href="#problem">Problem</a>
+                    </li>
+                    <li>
+                        <a class="page-scroll" href="#demo">Demo</a>
+                    </li>
+                    <li>
+                        <a class="page-scroll" href="#design">Design</a>
+                    </li>
+                    <!-- <li>
+                        <a class="page-scroll" href="#process">Process</a>
+                    </li> -->
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container -->
+    </nav>
+
+    <!-- Intro Header -->
+    <header class="intro">
+        <div class="intro-body">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-8 col-md-offset-2">
+                        <h1 class="brand-heading">EmotiSphere</h1>
+                        <p class="intro-text">A spherical interface that translates input from physiological sensors into a musical composition. </p>
+                        <a href="#demo" class="btn btn-circle page-scroll">
+                            <i class="fa fa-angle-double-down animated"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Problem Section -->
+    <section id="problem" class="content-section text-center">
+        <div class="problem-section">
+            <div class="container">
+                <!-- <div class="col-lg-8 col-lg-offset-2"> -->
+                    <h2>Problem</h2>
+                    <p>There is an inherent relationship between emotion and music. People experience a range of emotions on a daily basis. Is there a way to utilize this connection in order to enrich emotions? In designing EmotiSphere, we attempted to address this question by connection the physical </p>
+                <!-- </div> -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Demo Section -->
+    <section id="demo">
+        <!-- <section id="demo" class="container content-section text-center"> -->
+        <div class="row">
+            <!-- <div class="col-lg-8 col-lg-offset-2"> -->
+                <h2>Demo</h2>
+                <p>EmotiSphere uses information from skin conductance and heart rate sensors to determine an emotional profile. Using that profile, a musical composition is created and played through speakers. The sphere lights up corresponding to the mood. Below is a video of a user scenario with a working prototype.</p>
+                <!-- <video width="90%">
+                    <source src="EmotiSphere.mp4" type="video/mp4">
+                </video> -->
+                <!-- <div class= "embed-responsive embed-responsive-16by9">
+                    <iframe class ="embed-responsive-item" src="EmotiSphere.mp4"></iframe>
+                </div> -->
+                <video width="1120" height="630" controls>
+                    <source src="EmotiSphere.mp4" type="video/mp4">
+                    </video>
+                </div>
+            <!-- </div> -->
+        </div>
+    </section>
+
+<!-- Design and process Section -->
+    <section id="design" class="content-section text-center">
+            <h2>Design</h2>
+            <!-- <p>Our initial design included two skin sensors, a <a href="http://pulsesensor.com/"> PulseSensor</a>, and a 3D-printed base.</p> -->
+            <p>Our initial design included an Arduino, two skin sensors, a heart rate monitor, and a base.</p>
+            <div class="row-design">
+                <div class="col-md-12 col-lg-12">
+                    <img src="hrmgss.png">
+                </div>
+            </div>
+            <p id="design-p">Our design included two main groups of interactions: on- and off-base. </p>
+            <div class="row-design">
+                <div class="col-md-6 col-lg-6">
+                    <img src="hrmgss.png">
+                    <img src="hrmgss.png">
+                </div>
+                <div class="col-md-6 col-lg-6">
+                    <img src="hrmgss.png">
+                    <img src="hrmgss.png">
+                </div>
+            </div>
+            <p id="design-p">Our current prototype uses an Arduino, two skin sensors, a <a href="http://pulsesensor.com/"> PulseSensor</a>, Pure Data, and has a 3D-printed stopper and base. </p>
+        </div>
+
+<div class="timeline-section">
+   <!--          <div class="container"> -->
+               <!--  <div class="col-lg-8 col-lg-offset-2"> -->
+                    <h2>Design timeline</h2>
+                    <iframe src='http://cdn.knightlab.com/libs/timeline/latest/embed/index.html?source=0AmOcGsep5SINdGdScC1qRUhNUUplRkFOUFdqSDZSaUE&font=Bevan-PotanoSans&maptype=toner&lang=en&height=650' width='100%' height='650' frameborder='0'></iframe>
+                  <!--   </div>       -->         
+         <!--    </div> -->
+        </div>
+
+    </section>
+
+    <!-- Process Section -->
+    <!-- <section id="process" class="content-section text-center">
+        <div class="process-section"> -->
+   <!--          <div class="container"> -->
+               <!--  <div class="col-lg-8 col-lg-offset-2"> -->
+                    <!-- <h2>Process</h2>
+                    <iframe src='http://cdn.knightlab.com/libs/timeline/latest/embed/index.html?source=0AmOcGsep5SINdGdScC1qRUhNUUplRkFOUFdqSDZSaUE&font=Bevan-PotanoSans&maptype=toner&lang=en&height=650' width='100%' height='650' frameborder='0'></iframe> -->
+                  <!--   </div>       -->         
+         <!--    </div> -->
+        <!-- </div>
+    </section> -->
+   
+
+    <!-- Footer -->
+    <footer id = "footer" >
+        <div class="container text-center">
+            <p>Copyright &copy; Sara Burns, Galen Chuang, Shelley Wang 2014</p>
+        </div>
+    </footer>
+
+    <!-- jQuery -->
+    <script src="js/jquery.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="js/bootstrap.min.js"></script>
+
+    <!-- Plugin JavaScript -->
+    <script src="js/jquery.easing.min.js"></script>
+
+    <!-- Custom Theme JavaScript -->
+    <script src="js/grayscale.js"></script>
+
+</body>
+
+</html>
