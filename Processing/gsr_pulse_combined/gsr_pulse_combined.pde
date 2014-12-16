@@ -1,6 +1,8 @@
-//combining gsr and pulse scripts into one
+//Processing code to run after uploading Arduino code. Last updated by Galen, 12.16.14. Still buggy.
+//May have to change your serial port (line 82) to a different number in the array. Also, file paths need to be changed.
+
 //key for characters in serial port: A = gsr value, S = pulse signal, B = pulse BPM
-//Q = pulse IBI, r = red led, g = green led, b = blue led, w = white led
+//Q = pulse IBI, r = red led, g = green led, b = blue led, w = white led, w-z = reed
 
 import processing.serial.*;
 PFont font;
@@ -10,8 +12,8 @@ boolean fileWritten = false; //write file
 boolean isStable = false; //when to write file
 int timeBeforeRecording;
 int recordingTime;
-   boolean timeStored = false;
-   boolean blink = true;
+boolean timeStored = false;
+boolean blink = true;
 
 int Sensor;      // HOLDS PULSE SENSOR DATA FROM ARDUINO
 int IBI;         // HOLDS TIME BETWEN HEARTBEATS FROM ARDUINO
@@ -31,7 +33,7 @@ int BPMWindowHeight = 340;
 boolean beat = false;    // set when a heart beat is detected, then cleared when the BPM graph is advanced
 boolean pulseRecorded = false;
 
-//gsr
+//skin sensor variables
 String TIME_COLUMN = "time";
 String DATA_COLUMN = "nervous";
 Table table;
@@ -40,7 +42,7 @@ String[] profile = new String[1]; //holds one number of profile
 int gsr;
 boolean profRecorded = false;
 
-//reed
+//reed sensor vars
 int reedInt1 = 0;
 int reedInt2 = 0;
 int reedInt3 = 0;
@@ -157,31 +159,31 @@ void draw() {
   scaleBar.update (mouseX, mouseY);
   scaleBar.display();
    
+   //to configure start of recording and corresponding LED behavior
    if (!pulseRecorded && !profRecorded && gsr > 0) {
      if (!timeStored) {
      timeBeforeRecording = millis();
-    
      timeStored = true;
-   }
-     recordingTime = millis()-timeBeforeRecording;
-     print("time since start of recording: " + recordingTime + "\n");
-     
-     if (blink) {
-      myPort.write(108);
-      blink = false;
-     }
-     
-     if (recordingTime >= 5000) {
-       blink = false;
-     determineProfile(gsr);
       }
-     }
-//   
-}  //end of draw loop
+      
+      recordingTime = millis()-timeBeforeRecording;
+      // print("time since start of recording: " + recordingTime + "\n");
+        
+      if (blink) {
+         myPort.write(108);
+         blink = false;
+      }
+        
+      if (recordingTime >= 5000) {
+         blink = false;
+         determineProfile(gsr);
+      }
+   }
+} //end of draw 
 
 void serialEvent(Serial myPort){ 
-    for (int i = 0; i <= reedBools.length - 1; i++) {
-    reedBools[i] = false;
+   for (int i = 0; i <= reedBools.length - 1; i++) {
+   reedBools[i] = false;
   }
   
    String inData = myPort.readStringUntil('\n');
@@ -205,28 +207,28 @@ void serialEvent(Serial myPort){
      IBI = int(inData);                   // convert the string to usable int
    }
    //pulse
-   if (inData.charAt(0) == 'A'){          // gsr data
+   if (inData.charAt(0) == 'A'){          // skin sensor data
      inData = inData.substring(1);        // cut off the leading 'A'
      gsr = int(inData);                   // convert the string to usable int
    }
    
    //magnet stuff
-    if (inData.charAt(0) == 'w'){          // sensor 1
+    if (inData.charAt(0) == 'w'){          // reed sensor 1
      inData = inData.substring(1);        // cut off the leading char
      reedInt1 = int(inData);                // convert the string to usable int
      if (reedInt1 == 1) reedBools[0] = true;
    }
-      if (inData.charAt(0) == 'x'){          // sensor 2
+      if (inData.charAt(0) == 'x'){          // reed sensor 2
      inData = inData.substring(1);        // cut off the leading char
      reedInt2 = int(inData);                // convert the string to usable int
      if (reedInt2 == 1) reedBools[1] = true;
    }
-   if (inData.charAt(0) == 'y'){          // sensor 3
+   if (inData.charAt(0) == 'y'){          // reed sensor 3
      inData = inData.substring(1);        // cut off the leading char
      reedInt3 = int(inData);                // convert the string to usable int
      if (reedInt3 == 1) reedBools[2] = true;
    }
-   if (inData.charAt(0) == 'z'){          // sensor 4
+   if (inData.charAt(0) == 'z'){          // reed sensor 4
      inData = inData.substring(1);        // cut off the leading char
      reedInt4 = int(inData);                // convert the string to usable int
      if (reedInt4 == 1) reedBools[3] = true;
@@ -234,16 +236,9 @@ void serialEvent(Serial myPort){
    }
 }
 
-void blinkRecord() {
-   myPort.write(108); //to get led to flash while recording
-  //delay(5000);
-   //myPort.write(111); // turn things back to no light
-}
-
-void delay(int delay)
+void blinkRecord() 
 {
-  int time = millis();
-  while(millis() - time <= delay);
+   myPort.write(108); //to get led to flash while recording
 }
 
 //method for gsr to determine profile after stabilization and save file
@@ -254,17 +249,13 @@ void determineProfile(int gsr) {
   String[] pulseArr = new String[1];
   String pulse = str(BPM);
   pulseArr[0] = pulse;
-  
-//    if (millis() <= 9999) {
-//  myPort.write(119); //white
-//      }
 
   print("BPM: " + BPM + "\n");
   //pulse
    saveStrings(pulseFilename,pulseArr);
    pulseRecorded = true;
 
-//gsr
+//skin sensor
     print("stabilized\n");
     if (gsr >= 10 && BPM >= 1000) {
       profile[0] = "1";
@@ -300,7 +291,7 @@ void determineProfile(int gsr) {
   }
   //-------------------------------
   
-  //normal
+  //logic for reed sensors to control volume
     if (currReed == 0 && preReed != 0) {
         for (int j = 0; j <= reedBools.length-1; j++) {
          // println("preReed next: " + preReed );
@@ -312,7 +303,6 @@ void determineProfile(int gsr) {
         }
         }
         
-       //if ((currReed > preReed && currReed != 0) && preReed != 1 || (preReed == 4 && currReed == 1)) {
          if ((currReed == 1 && preReed == 4) || (currReed == 2 && preReed == 1) || (currReed == 3 && preReed == 2) 
          || (currReed == 4 && preReed == 3)) {
         print("increase volume\n");
@@ -324,8 +314,7 @@ void determineProfile(int gsr) {
        println("currReed after increase: " + currReed);
        println("preReed after increase: " + preReed); 
       }
-      
-      //if ((currReed < preReed && currReed != 0) && preReed != 4 || (preReed == 1 && currReed == 4)) {
+   
         if ((currReed == 4 && preReed == 1) || (currReed == 1 && preReed == 2) || (currReed == 2 && preReed == 3) 
          || (currReed == 3 && preReed == 4)) {
         print("decrease volume\n");
