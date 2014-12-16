@@ -1,35 +1,38 @@
-//combining gsr and pulse scripts into one
-//key for characters in serial port: A = gsr value, S = pulse signal, B = pulse BPM
-//Q = pulse IBI, R = red led, G = green led, B = blue led, W = white led
+//Arduino code to print reed sensor, skin sensor, and PulseSensor input to serial port. Still buggy.
+//Last edited: Galen, 12.16.14
 
-//reed
+//key for characters in serial port: A = gsr value, S = pulse signal, B = pulse BPM
+//Q = pulse IBI, R = red led, G = green led, B = blue led, W = white led, w-z = reed sensors
+
+//reed sensor Arduino pins
 int pushButtonA = 12;
 int pushButtonB = 11;
 int pushButtonC = 9;
 int pushButtonD = 10;
 
-
-//both vars
+//LED Arduino pins
 int r_led = 5;
 int g_led = 6;
 int b_led = 7;
-  
-//pulse vars
-int pulsePin = 1;
+
+//Skin sensor pin
+gsr_pin = 0;
+
+int pulsePin = 1;                   // PulseSensor Arduino pin
 volatile int BPM;                   // used to hold the pulse rate
 volatile int Signal;                // holds the incoming raw data
 volatile int IBI = 600;             // holds the time between beats, must be seeded! 
 volatile boolean Pulse = false;     // true when pulse wave is high, false when it's low
 volatile boolean QS = false;        // becomes true when Arduoino finds a beat.
 
-void setup() {
+void setup() { 
   Serial.begin(115200);
   interruptSetup();
-  analogReference(EXTERNAL); 
+  analogReference(EXTERNAL);        // Using 3.3v
   pinMode(r_led, OUTPUT);
   pinMode(g_led, OUTPUT);
   pinMode(b_led, OUTPUT);
-    pinMode(pushButtonA, INPUT);
+  pinMode(pushButtonA, INPUT);
   pinMode(pushButtonB, INPUT);
   pinMode(pushButtonC, INPUT);
   pinMode(pushButtonD, INPUT);
@@ -37,20 +40,20 @@ void setup() {
 
 void loop(){
   //gsr
-  int a=analogRead(0);
+  int a=analogRead(gsr_pin);
   Serial.print('A');
   Serial.println(a);
   
   //pulse
   sendDataToProcessing('S', Signal);     // send Processing the raw Pulse Sensor data
   if (QS == true){                       // Quantified Self flag is true when arduino finds a heartbeat
-        sendDataToProcessing('B',BPM);   // send heart rate with a 'B' prefix
-        sendDataToProcessing('Q',IBI);   // send time between beats with a 'Q' prefix
-        QS = false;                      // reset the Quantified Self flag for next time    
+    sendDataToProcessing('B',BPM);   // send heart rate with a 'B' prefix
+    sendDataToProcessing('Q',IBI);   // send time between beats with a 'Q' prefix
+    QS = false;                      // reset the Quantified Self flag for next time    
  }
  
- //reed stuff-----------------
- int buttonStateA = digitalRead(pushButtonA);
+ //reed stuff to print to serial port
+  int buttonStateA = digitalRead(pushButtonA);
   int buttonStateB = digitalRead(pushButtonB);
   int buttonStateC = digitalRead(pushButtonC);
   int buttonStateD = digitalRead(pushButtonD);
@@ -66,7 +69,6 @@ void loop(){
   Serial.print('z');
   Serial.println(buttonStateD);
   delay(5);        // delay in between reads for stability
-  //---------------------------------------------
  
  //make led color of mood
   int input = Serial.read();
@@ -80,36 +82,37 @@ void loop(){
   delay(20);                             //  take a break
 }
 
-//helper methods
-void sendDataToProcessing(char symbol, int data ){
-      Serial.print(symbol);                // symbol prefix tells Processing what type of data is coming
-      Serial.println(data);                // the data to send culminating in a carriage return
+//helper methods------------------------------------------------------------------
+
+void sendDataToProcessing(char symbol, int data )
+{
+  Serial.print(symbol);                // symbol prefix tells Processing what type of data is coming
+  Serial.println(data);                // the data to send culminating in a carriage return
 }
 
-void setColor(int red, int green, int blue)
+void setColor(int red, int green, int blue)     //To set LED color
 {
   analogWrite(r_led, red);
   analogWrite(g_led, green);
   analogWrite(b_led, blue);
 }
 
-void showRecording() {
+void showRecording()                  //To show recording status
+{          
   setColor(255, 255, 255);
   delay(625);
   setColor(0,0,0);
   delay(625);
-   setColor(255, 255, 255);
+  setColor(255, 255, 255);
   delay(625);
   setColor(0,0,0);
   delay(625);
-   setColor(255, 255, 255);
+  setColor(255, 255, 255);
   delay(625);
   setColor(0,0,0);
   delay(625);
-   setColor(255, 255, 255);
+  setColor(255, 255, 255);
   delay(625);
   setColor(0,0,0);
   delay(625);
-
 }
-
