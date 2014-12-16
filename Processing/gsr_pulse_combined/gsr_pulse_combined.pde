@@ -257,7 +257,7 @@ void determineProfile(int gsr) {
 
 //skin sensor
     print("stabilized\n");
-    if (gsr >= 10 && BPM >= 1000) {
+    if (gsr >= 30 && BPM >= 100) { //sets the threshold
       profile[0] = "1";
       myPort.write(114); //red
       print("you are agitated\n");
