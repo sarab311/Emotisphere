@@ -10,8 +10,8 @@ boolean fileWritten = false; //write file
 boolean isStable = false; //when to write file
 int timeBeforeRecording;
 int recordingTime;
-   boolean timeStored = false;
-   boolean blink = true;
+boolean timeStored = false;
+boolean blink = true;
 
 int Sensor;      // HOLDS PULSE SENSOR DATA FROM ARDUINO
 int IBI;         // HOLDS TIME BETWEN HEARTBEATS FROM ARDUINO
@@ -270,13 +270,13 @@ void determineProfile(int gsr) {
       profile[0] = "1";
       myPort.write(114); //red
       print("you are agitated\n");
-      open("C:/Users/Sara/Documents/agitated.pd"); //open agitated pd file
+      open("data/agitated.pd"); //open agitated pd file
       profRecorded = true;
     } else {
       profile[0] = "0";
        myPort.write(98); //blue
        print("you are calm\n");
-      open("C:/Users/Sara/Documents/relaxed.pd"); //open calm pd file
+      open("data/relaxed.pd"); //open calm pd file
       profRecorded = true;
     }
     
