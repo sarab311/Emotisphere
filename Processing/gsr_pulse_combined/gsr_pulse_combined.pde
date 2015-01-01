@@ -5,11 +5,11 @@
 //Q = pulse IBI, r = red led, g = green led, b = blue led, w = white led, w-z = reed
 
 //SET FILE PATHS HERE----------------------------------------------------
-String recNumFile = "C:/Users/Sara/Documents/recnumber.txt";
-String pulseFilename = "C:/Users/Sara/Documents/pulse.txt";
+String recNumFile = "data/recnumber.txt";
+String pulseFilename = "data/pulse.txt";
 String agitatedPd = "data/agitated.pd";
 String relaxedPd = "data/relaxed.pd";
-String volumePath = "C:/Users/Sara/Documents/volume.txt";
+String volumePath = "data/volume.txt";
 //-----------------------------------------------------------------------
 
 import processing.serial.*;
