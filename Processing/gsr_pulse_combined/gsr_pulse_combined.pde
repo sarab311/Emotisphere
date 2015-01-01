@@ -4,6 +4,14 @@
 //key for characters in serial port: A = gsr value, S = pulse signal, B = pulse BPM
 //Q = pulse IBI, r = red led, g = green led, b = blue led, w = white led, w-z = reed
 
+//SET FILE PATHS HERE----------------------------------------------------
+String recNumFile = "C:/Users/Sara/Documents/recnumber.txt";
+String pulseFilename = "C:/Users/Sara/Documents/pulse.txt";
+String agitatedPd = "data/agitated.pd";
+String relaxedPd = "data/relaxed.pd";
+String volumePath = "C:/Users/Sara/Documents/volume.txt";
+//-----------------------------------------------------------------------
+
 import processing.serial.*;
 PFont font;
 Scrollbar scaleBar;  
@@ -236,16 +244,10 @@ void serialEvent(Serial myPort){
    }
 }
 
-void blinkRecord() 
-{
-   myPort.write(108); //to get led to flash while recording
-}
-
 //method for gsr to determine profile after stabilization and save file
 void determineProfile(int gsr) {
-  String recNumFile = "C:/Users/Sara/Documents/recnumber.txt";
- 
-  String pulseFilename = "C:/Users/Sara/Documents/pulse.txt";
+  //String recNumFile = "C:/Users/Sara/Documents/recnumber.txt";
+  //String pulseFilename = "C:/Users/Sara/Documents/pulse.txt";
   String[] pulseArr = new String[1];
   String pulse = str(BPM);
   pulseArr[0] = pulse;
@@ -261,13 +263,15 @@ void determineProfile(int gsr) {
       profile[0] = "1";
       myPort.write(114); //red
       print("you are agitated\n");
-      open("data/agitated.pd"); //open agitated pd file
+     // open("data/agitated.pd"); //open agitated pd file
+      open(agitatedPd); //open agitated pd file
       profRecorded = true;
     } else {
       profile[0] = "0";
        myPort.write(98); //blue
        print("you are calm\n");
-      open("data/relaxed.pd"); //open calm pd file
+      //open("data/relaxed.pd"); //open calm pd file
+      open(relaxedPd);
       profRecorded = true;
     }
     
@@ -309,7 +313,8 @@ void determineProfile(int gsr) {
         currVolume += 20;
         if (currVolume > 127) currVolume = 127;
         currVolumeArray[0] = str(currVolume);
-        saveStrings("C:/Users/Sara/Documents/volume.txt",currVolumeArray);
+        //saveStrings("C:/Users/Sara/Documents/volume.txt",currVolumeArray);
+        saveStrings(volumePath,currVolumeArray);
         
        println("currReed after increase: " + currReed);
        println("preReed after increase: " + preReed); 
@@ -321,7 +326,7 @@ void determineProfile(int gsr) {
         currVolume -= 20;
         if (currVolume < 0) currVolume = 0;
         currVolumeArray[0] = str(currVolume);
-         saveStrings("C:/Users/Sara/Documents/volume.txt",currVolumeArray);
+        saveStrings(volumePath,currVolumeArray);
       }
       
       if (currReed != 0) preReed = currReed; //last reed sensor to be activated
