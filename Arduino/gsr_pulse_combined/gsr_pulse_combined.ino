@@ -1,5 +1,5 @@
 //Arduino code to print reed sensor, skin sensor, and PulseSensor input to serial port. Still buggy.
-//Last edited: Galen, 12.16.14
+//Last edited: Galen, 1.2.15
 
 //key for characters in serial port: A = gsr value, S = pulse signal, B = pulse BPM
 //Q = pulse IBI, R = red led, G = green led, B = blue led, W = white led, w-z = reed sensors
@@ -58,16 +58,20 @@ void loop(){
   int buttonStateC = digitalRead(pushButtonC);
   int buttonStateD = digitalRead(pushButtonD);
   Serial.print('w');
-  Serial.println(buttonStateA);
+  if (buttonStateA == 1) Serial.println('0');
+  else Serial.println('1');
   delay(5);
   Serial.print('x');
-  Serial.println(buttonStateB);
+  if (buttonStateB == 1) Serial.println('0');
+  else Serial.println('1');
   delay(5);
   Serial.print('y');
-  Serial.println(buttonStateC);
+  if (buttonStateC == 1) Serial.println('0');
+  else Serial.println('1');
   delay(5);
   Serial.print('z');
-  Serial.println(buttonStateD);
+  if (buttonStateD == 1) Serial.println('0');
+  else Serial.println('1');
   delay(5);        // delay in between reads for stability
  
  //make led color of mood
@@ -77,7 +81,7 @@ void loop(){
   if (input == 'b') setColor(0,0,255);  
   if (input == 'w') setColor(255,255,255);
   if (input == 'o') setColor(0,0,0);
-  if (input == 'l') showRecording();
+  if (input == 'l') setColor(255,255,255);
   
   delay(20);                             //  take a break
 }
@@ -95,24 +99,4 @@ void setColor(int red, int green, int blue)     //To set LED color
   analogWrite(r_led, red);
   analogWrite(g_led, green);
   analogWrite(b_led, blue);
-}
-
-void showRecording()                  //To show recording status
-{          
-  setColor(255, 255, 255);
-  delay(625);
-  setColor(0,0,0);
-  delay(625);
-  setColor(255, 255, 255);
-  delay(625);
-  setColor(0,0,0);
-  delay(625);
-  setColor(255, 255, 255);
-  delay(625);
-  setColor(0,0,0);
-  delay(625);
-  setColor(255, 255, 255);
-  delay(625);
-  setColor(0,0,0);
-  delay(625);
 }
