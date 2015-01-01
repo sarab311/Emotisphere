@@ -1,4 +1,4 @@
-//Processing code to run after uploading Arduino code. Last updated by Galen, 12.16.14. Still buggy.
+//Processing code to run after uploading Arduino code. Last updated by Galen, 1.2.15. Still buggy.
 //May have to change your serial port (line 82) to a different number in the array. Also, file paths need to be changed.
 
 //key for characters in serial port: A = gsr value, S = pulse signal, B = pulse BPM
