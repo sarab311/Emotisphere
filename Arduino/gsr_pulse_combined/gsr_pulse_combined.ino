@@ -16,7 +16,7 @@ int g_led = 6;
 int b_led = 7;
 
 //Skin sensor pin
-gsr_pin = 0;
+int gsr_pin = 0;
 
 int pulsePin = 1;                   // PulseSensor Arduino pin
 volatile int BPM;                   // used to hold the pulse rate

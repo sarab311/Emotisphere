@@ -1,4 +1,4 @@
-//Processing code to run after uploading Arduino code. Last updated by Galen, 1.2.15. Still buggy.
+//Processing code to run after uploading Arduino code. Last updated by Galen, 1.3.15. Still buggy.
 //May have to change your serial port (line 82) to a different number in the array. Also, file paths need to be changed.
 
 //key for characters in serial port: A = gsr value, S = pulse signal, B = pulse BPM
@@ -49,6 +49,8 @@ Serial myPort;
 String[] profile = new String[1]; //holds one number of profile
 int gsr;
 boolean profRecorded = false;
+int gsrCount = 0;
+String[] gsrValues = new String[300];
 
 //reed sensor vars
 int reedInt1 = 0;
@@ -69,267 +71,291 @@ void setup() {
   textAlign(CENTER);
   rectMode(CENTER);
   ellipseMode(CENTER);  
-// Scrollbar constructor inputs: x,y,width,height,minVal,maxVal
+  // Scrollbar constructor inputs: x,y,width,height,minVal,maxVal
   scaleBar = new Scrollbar (400, 575, 180, 12, 0.5, 1.0);  // set parameters for the scale bar
   RawY = new int[PulseWindowWidth];          // initialize raw pulse waveform array
   ScaledY = new int[PulseWindowWidth];       // initialize scaled pulse waveform array
   rate = new int [BPMWindowWidth];           // initialize BPM waveform array
   zoom = 0.75;                               // initialize scale of heartbeat window
-    
-// set the visualizer lines to 0
- for (int i=0; i<rate.length; i++){
-    rate[i] = 555;      // Place BPM graph line at bottom of BPM Window 
-   }
- for (int i=0; i<RawY.length; i++){
+
+  // set the visualizer lines to 0
+  for (int i=0; i<rate.length; i++) {
+    rate[i] = 555;      // Place BPM graph line at bottom of BPM Window
+  }
+  for (int i=0; i<RawY.length; i++) {
     RawY[i] = height/2; // initialize the pulse window data line to V/2
- }
-   
-// GO FIND THE ARDUINO
-    println(Serial.list());    // print a list of available serial ports
+  }
+
+  // GO FIND THE ARDUINO
+  println(Serial.list());    // print a list of available serial ports
   // choose the number between the [] that is connected to the Arduino
-  myPort = new Serial(this, Serial.list()[0], 115200);  // make sure Arduino is talking serial at this baud rate
+  myPort = new Serial(this, Serial.list()[7], 115200);  // make sure Arduino is talking serial at this baud rate
   myPort.clear();            // flush buffer
   myPort.bufferUntil('\n');  // set buffer full flag on receipt of carriage return
 }
-  
+
 void draw() {
   controlVolume();
   background(0);
   noStroke();
-// DRAW OUT THE PULSE WINDOW AND BPM WINDOW RECTANGLES  
+  // DRAW OUT THE PULSE WINDOW AND BPM WINDOW RECTANGLES  
   fill(eggshell);  // color for the window background
-  rect(255,height/2,PulseWindowWidth,PulseWindowHeight);
-  rect(600,385,BPMWindowWidth,BPMWindowHeight);
-  
-// DRAW THE PULSE WAVEFORM
+  rect(255, height/2, PulseWindowWidth, PulseWindowHeight);
+  rect(600, 385, BPMWindowWidth, BPMWindowHeight);
+
+  // DRAW THE PULSE WAVEFORM
   // prepare pulse data points    
   RawY[RawY.length-1] = (1023 - Sensor) - 212;   // place the new raw datapoint at the end of the array
   zoom = scaleBar.getPos();                      // get current waveform scale value
-  offset = map(zoom,0.5,1,150,0);                // calculate the offset needed at this scale
+  offset = map(zoom, 0.5, 1, 150, 0);                // calculate the offset needed at this scale
   for (int i = 0; i < RawY.length-1; i++) {      // move the pulse waveform by
     RawY[i] = RawY[i+1];                         // shifting all raw datapoints one pixel left
     float dummy = RawY[i] * zoom + offset;       // adjust the raw data to the selected scale
-    ScaledY[i] = constrain(int(dummy),44,556);   // transfer the raw data array to the scaled array
+    ScaledY[i] = constrain(int(dummy), 44, 556);   // transfer the raw data array to the scaled array
   }
-  stroke(250,0,0);                               // red is a good color for the pulse waveform
+  stroke(250, 0, 0);                               // red is a good color for the pulse waveform
   noFill();
   beginShape();                                  // using beginShape() renders fast
   for (int x = 1; x < ScaledY.length-1; x++) {    
     vertex(x+10, ScaledY[x]);                    //draw a line connecting the data points
   }
   endShape();
-  
-// DRAW THE BPM WAVE FORM
-// first, shift the BPM waveform over to fit then next data point only when a beat is found
- if (beat == true){   // move the heart rate line over one pixel every time the heart beats 
-   beat = false;      // clear beat flag (beat flag waset in serialEvent tab)
-   for (int i=0; i<rate.length-1; i++){
-     rate[i] = rate[i+1];                  // shift the bpm Y coordinates over one pixel to the left
-   }
-// then limit and scale the BPM value
-   BPM = min(BPM,200);                     // limit the highest BPM value to 200
-   float dummy = map(BPM,0,200,555,215);   // map it to the heart rate window Y
-   rate[rate.length-1] = int(dummy);       // set the rightmost pixel to the new data point value
- } 
- // GRAPH THE HEART RATE WAVEFORM
- stroke(250,0,0);                          // color of heart rate graph
- strokeWeight(2);                          // thicker line is easier to read
- noFill();
- beginShape();
- for (int i=0; i < rate.length-1; i++){    // variable 'i' will take the place of pixel x position   
-   vertex(i+510, rate[i]);                 // display history of heart rate datapoints
- }
- endShape();
- 
-// DRAW THE HEART AND MAYBE MAKE IT BEAT
-  fill(250,0,0);
-  stroke(250,0,0);
+
+  // DRAW THE BPM WAVE FORM
+  // first, shift the BPM waveform over to fit then next data point only when a beat is found
+  if (beat == true) {   // move the heart rate line over one pixel every time the heart beats 
+    beat = false;      // clear beat flag (beat flag waset in serialEvent tab)
+    for (int i=0; i<rate.length-1; i++) {
+      rate[i] = rate[i+1];                  // shift the bpm Y coordinates over one pixel to the left
+    }
+    // then limit and scale the BPM value
+    BPM = min(BPM, 200);                     // limit the highest BPM value to 200
+    float dummy = map(BPM, 0, 200, 555, 215);   // map it to the heart rate window Y
+    rate[rate.length-1] = int(dummy);       // set the rightmost pixel to the new data point value
+  } 
+  // GRAPH THE HEART RATE WAVEFORM
+  stroke(250, 0, 0);                          // color of heart rate graph
+  strokeWeight(2);                          // thicker line is easier to read
+  noFill();
+  beginShape();
+  for (int i=0; i < rate.length-1; i++) {    // variable 'i' will take the place of pixel x position   
+    vertex(i+510, rate[i]);                 // display history of heart rate datapoints
+  }
+  endShape();
+
+  // DRAW THE HEART AND MAYBE MAKE IT BEAT
+  fill(250, 0, 0);
+  stroke(250, 0, 0);
   // the 'heart' variable is set in serialEvent when arduino sees a beat happen
   heart--;                    // heart is used to time how long the heart graphic swells when your heart beats
-  heart = max(heart,0);       // don't let the heart variable go into negative numbers
-  if (heart > 0){             // if a beat happened recently, 
+  heart = max(heart, 0);       // don't let the heart variable go into negative numbers
+  if (heart > 0) {             // if a beat happened recently, 
     strokeWeight(8);          // make the heart big
   }
   smooth();   // draw the heart with two bezier curves
-  bezier(width-100,50, width-20,-20, width,140, width-100,150);
-  bezier(width-100,50, width-190,-20, width-200,140, width-100,150);
+  bezier(width-100, 50, width-20, -20, width, 140, width-100, 150);
+  bezier(width-100, 50, width-190, -20, width-200, 140, width-100, 150);
   strokeWeight(1);          // reset the strokeWeight for next time
 
 
-// PRINT THE DATA AND VARIABLE VALUES
+  // PRINT THE DATA AND VARIABLE VALUES
   fill(eggshell);                                       // get ready to print text
-  text("Pulse Sensor Amped Visualizer 1.1",245,30);     // tell them what you are
-  text("IBI " + IBI + "mS",600,585);                    // print the time between heartbeats in mS
-  text(BPM + " BPM",600,200);                           // print the Beats Per Minute
-  text("Pulse Window Scale " + nf(zoom,1,2), 150, 585); // show the current scale of Pulse Window
-  
-//  DO THE SCROLLBAR THINGS
+  text("Pulse Sensor Amped Visualizer 1.1", 245, 30);     // tell them what you are
+  text("IBI " + IBI + "mS", 600, 585);                    // print the time between heartbeats in mS
+  text(BPM + " BPM", 600, 200);                           // print the Beats Per Minute
+  text("Pulse Window Scale " + nf(zoom, 1, 2), 150, 585); // show the current scale of Pulse Window
+
+  //  DO THE SCROLLBAR THINGS
   scaleBar.update (mouseX, mouseY);
   scaleBar.display();
-   
-   //to configure start of recording and corresponding LED behavior
-   if (!pulseRecorded && !profRecorded && gsr > 0) {
-     if (!timeStored) {
-     timeBeforeRecording = millis();
-     timeStored = true;
-      }
-      
-      recordingTime = millis()-timeBeforeRecording;
-      // print("time since start of recording: " + recordingTime + "\n");
-        
-      if (blink) {
-         myPort.write(108);
-         blink = false;
-      }
-        
-      if (recordingTime >= 5000) {
-         blink = false;
-         determineProfile(gsr);
-      }
-   }
+
+  //to configure start of recording and corresponding LED behavior
+  if (!pulseRecorded && !profRecorded && gsr > 0) {
+    if (!timeStored) {
+      timeBeforeRecording = millis();
+      timeStored = true;
+    }
+
+    recordingTime = millis()-timeBeforeRecording;
+    // print("time since start of recording: " + recordingTime + "\n");
+
+    if (blink) {
+      myPort.write(108);
+      blink = false;
+    }
+
+    if (recordingTime >= 5000) {
+      //myPort.write(108);
+      blink = false;
+      determineProfile(gsr);
+    }
+  }
 } //end of draw 
 
-void serialEvent(Serial myPort){ 
-   for (int i = 0; i <= reedBools.length - 1; i++) {
-   reedBools[i] = false;
+void serialEvent(Serial myPort) { 
+  for (int i = 0; i <= reedBools.length - 1; i++) {
+    reedBools[i] = false;
   }
-  
-   String inData = myPort.readStringUntil('\n');
-   
-   if ( inData != null ) {
-      print(inData);
-   inData = trim(inData);                 // cut off white space (carriage return)
-   
-   if (inData.charAt(0) == 'S'){          // leading 'S' for sensor data
-     inData = inData.substring(1);        // cut off the leading 'S'
-     Sensor = int(inData);                // convert the string to usable int
-   }
-   if (inData.charAt(0) == 'B'){          // leading 'B' for BPM data
-     inData = inData.substring(1);        // cut off the leading 'B'
-     BPM = int(inData);                   // convert the string to usable int
-     beat = true;                         // set beat flag to advance heart rate graph
-     heart = 20;                          // begin heart image 'swell' timer
-   }
- if (inData.charAt(0) == 'Q'){            // leading 'Q' means IBI data 
-     inData = inData.substring(1);        // cut off the leading 'Q'
-     IBI = int(inData);                   // convert the string to usable int
-   }
-   //pulse
-   if (inData.charAt(0) == 'A'){          // skin sensor data
-     inData = inData.substring(1);        // cut off the leading 'A'
-     gsr = int(inData);                   // convert the string to usable int
-   }
-   
-   //magnet stuff
-    if (inData.charAt(0) == 'w'){          // reed sensor 1
-     inData = inData.substring(1);        // cut off the leading char
-     reedInt1 = int(inData);                // convert the string to usable int
-     if (reedInt1 == 1) reedBools[0] = true;
-   }
-      if (inData.charAt(0) == 'x'){          // reed sensor 2
-     inData = inData.substring(1);        // cut off the leading char
-     reedInt2 = int(inData);                // convert the string to usable int
-     if (reedInt2 == 1) reedBools[1] = true;
-   }
-   if (inData.charAt(0) == 'y'){          // reed sensor 3
-     inData = inData.substring(1);        // cut off the leading char
-     reedInt3 = int(inData);                // convert the string to usable int
-     if (reedInt3 == 1) reedBools[2] = true;
-   }
-   if (inData.charAt(0) == 'z'){          // reed sensor 4
-     inData = inData.substring(1);        // cut off the leading char
-     reedInt4 = int(inData);                // convert the string to usable int
-     if (reedInt4 == 1) reedBools[3] = true;
-   }
-   }
+
+  String inData = myPort.readStringUntil('\n');
+
+  if ( inData != null ) {
+    print(inData);
+    inData = trim(inData);                 // cut off white space (carriage return)
+
+    if (inData.charAt(0) == 'S') {          // leading 'S' for sensor data
+      inData = inData.substring(1);        // cut off the leading 'S'
+      Sensor = int(inData);                // convert the string to usable int
+    }
+    if (inData.charAt(0) == 'B') {          // leading 'B' for BPM data
+      inData = inData.substring(1);        // cut off the leading 'B'
+      BPM = int(inData);                   // convert the string to usable int
+      beat = true;                         // set beat flag to advance heart rate graph
+      heart = 20;                          // begin heart image 'swell' timer
+    }
+    if (inData.charAt(0) == 'Q') {            // leading 'Q' means IBI data 
+      inData = inData.substring(1);        // cut off the leading 'Q'
+      IBI = int(inData);                   // convert the string to usable int
+    }
+    //pulse
+    if (inData.charAt(0) == 'A') {          // skin sensor data
+      inData = inData.substring(1);        // cut off the leading 'A'
+      gsr = int(inData);                   // convert the string to usable int
+      if (recordingTime < 5000) {  //for some reason this is causing pulsesensor to crash
+        gsrCount++;
+        gsrValues[gsrCount-1] = str(gsr);
+      }
+    }
+
+    //magnet stuff
+    if (inData.charAt(0) == 'w') {          // reed sensor 1
+      inData = inData.substring(1);        // cut off the leading char
+      reedInt1 = int(inData);                // convert the string to usable int
+      if (reedInt1 == 1) reedBools[0] = true;
+    }
+    if (inData.charAt(0) == 'x') {          // reed sensor 2
+      inData = inData.substring(1);        // cut off the leading char
+      reedInt2 = int(inData);                // convert the string to usable int
+      if (reedInt2 == 1) reedBools[1] = true;
+    }
+    if (inData.charAt(0) == 'y') {          // reed sensor 3
+      inData = inData.substring(1);        // cut off the leading char
+      reedInt3 = int(inData);                // convert the string to usable int
+      if (reedInt3 == 1) reedBools[2] = true;
+    }
+    if (inData.charAt(0) == 'z') {          // reed sensor 4
+      inData = inData.substring(1);        // cut off the leading char
+      reedInt4 = int(inData);                // convert the string to usable int
+      if (reedInt4 == 1) reedBools[3] = true;
+    }
+  }
 }
 
 //method for gsr to determine profile after stabilization and save file
 void determineProfile(int gsr) {
-  //String recNumFile = "C:/Users/Sara/Documents/recnumber.txt";
-  //String pulseFilename = "C:/Users/Sara/Documents/pulse.txt";
+  saveStrings("gsrValues.txt", gsrValues); //saves gsrValues in a file for debugging purposes
+
+  //do calcultions with gsrValues-----------
+  int gsrCur = 0;
+  float gsrAvg = 0;
+  int gsrLen = 0;
+  int gsrFluct = 0;
+  int gsrTrend = 0;
+  for (int i = 0; i < gsrValues.length; i++) {
+    if (gsrValues[i] != null) { 
+      //avg stuff
+      gsrAvg += int(gsrValues[i]);
+      gsrLen++;
+      //fluctuation stuff
+      if (i >= 2 && abs(int(gsrValues[i])-int(gsrValues[i-1])) >= 1
+        && !(int(gsrValues[i-1]) == 0 && int(gsrValues[i]) == 1)) gsrFluct++; //not super accurate
+    }
+  }
+  gsrAvg /= gsrLen; //get the avg
+  //trend stuff
+  gsrTrend = int(gsrValues[0])-int(gsrValues[gsrLen-1]); //might not use this
+
+  //pulse
   String[] pulseArr = new String[1];
   String pulse = str(BPM);
   pulseArr[0] = pulse;
+  saveStrings(pulseFilename, pulseArr);
+  pulseRecorded = true;
 
-  print("BPM: " + BPM + "\n");
-  //pulse
-   saveStrings(pulseFilename,pulseArr);
-   pulseRecorded = true;
+  if (gsrAvg >= 1.1 && BPM >= 80 && gsrFluct >= 10) {
+    myPort.write(114); //red
+    print("you are agitated\n");
+    //print("gsrAvg: " + gsrAvg + "\n");
+    //print("gsrFluct " + gsrFluct + "\n");
+    open(agitatedPd); //open agitated pd file
+    profRecorded = true;
+  } else {
+    myPort.write(98); //blue
+    print("you are calm\n");
+    print("gsrAvg: " + gsrAvg + "\n");
+    print("gsrFluct: " + gsrFluct + "\n");
+    open(relaxedPd); //open calm pd file
+    profRecorded = true;
+  }
 
-//skin sensor
-    print("stabilized\n");
-    if (gsr >= 30 && BPM >= 100) { //sets the threshold
-      profile[0] = "1";
-      myPort.write(114); //red
-      print("you are agitated\n");
-     // open("data/agitated.pd"); //open agitated pd file
-      open(agitatedPd); //open agitated pd file
-      profRecorded = true;
-    } else {
-      profile[0] = "0";
-       myPort.write(98); //blue
-       print("you are calm\n");
-      //open("data/relaxed.pd"); //open calm pd file
-      open(relaxedPd);
-      profRecorded = true;
-    }
-    
-    int recnumber_temp = int(loadStrings(recNumFile)[0]);
-    recnumber_temp += 1;
-  String[] recnumber = new String[]{str(recnumber_temp)};
+  //how many recordings are saved?
+  int recnumber_temp = int(loadStrings(recNumFile)[0]);
+  recnumber_temp += 1;
+  String[] recnumber = new String[] {
+    str(recnumber_temp)
+    };
     saveStrings(recNumFile, recnumber);
-    }
-    
-    void controlVolume() {
-  
+} //end determineProfile
+
+//method to control volume based on reed sensor input
+void controlVolume() {
   //first initialized, no volume changes
- if (currReed == 0 && preReed == 0) { 
-     for (int i = 0; i <= reedBools.length-1; i++) {
-       //println("i: " + i + " status: " + reedBools[i]);
-    if (reedBools[i]) {
-      preReed = i+1; //last reed sensor to be activated
-      //println("preReed initial: " + preReed );
-    }
+  if (currReed == 0 && preReed == 0) { 
+    for (int i = 0; i <= reedBools.length-1; i++) {
+      //println("i: " + i + " status: " + reedBools[i]);
+      if (reedBools[i]) {
+        preReed = i+1; //last reed sensor to be activated
+        //println("preReed initial: " + preReed );
+      }
     }
   }
   //-------------------------------
-  
+
   //logic for reed sensors to control volume
-    if (currReed == 0 && preReed != 0) {
-        for (int j = 0; j <= reedBools.length-1; j++) {
-         // println("preReed next: " + preReed );
-    if (reedBools[j] && preReed != j+1) {
-      currReed = j+1; //currently activated reed sensor
+  if (currReed == 0 && preReed != 0) {
+    for (int j = 0; j <= reedBools.length-1; j++) {
+      // println("preReed next: " + preReed );
+      if (reedBools[j] && preReed != j+1) {
+        currReed = j+1; //currently activated reed sensor
         println("currReed: " + currReed);
-       println("preReed: " + preReed); //if current is different from previous
-       //update value of currReed
-        }
-        }
-        
-         if ((currReed == 1 && preReed == 4) || (currReed == 2 && preReed == 1) || (currReed == 3 && preReed == 2) 
-         || (currReed == 4 && preReed == 3)) {
-        print("increase volume\n");
-        currVolume += 20;
-        if (currVolume > 127) currVolume = 127;
-        currVolumeArray[0] = str(currVolume);
-        //saveStrings("C:/Users/Sara/Documents/volume.txt",currVolumeArray);
-        saveStrings(volumePath,currVolumeArray);
-        
-       println("currReed after increase: " + currReed);
-       println("preReed after increase: " + preReed); 
+        println("preReed: " + preReed); //if current is different from previous
+        //update value of currReed
       }
-   
-        if ((currReed == 4 && preReed == 1) || (currReed == 1 && preReed == 2) || (currReed == 2 && preReed == 3) 
-         || (currReed == 3 && preReed == 4)) {
-        print("decrease volume\n");
-        currVolume -= 20;
-        if (currVolume < 0) currVolume = 0;
-        currVolumeArray[0] = str(currVolume);
-        saveStrings(volumePath,currVolumeArray);
-      }
-      
-      if (currReed != 0) preReed = currReed; //last reed sensor to be activated
-      currReed = 0;    
-        }
     }
+
+    if ((currReed == 1 && preReed == 4) || (currReed == 2 && preReed == 1) 
+      || (currReed == 3 && preReed == 2) || (currReed == 4 && preReed == 3)) {
+      print("increase volume\n");
+      currVolume += 20;
+      if (currVolume > 127) currVolume = 127;
+      currVolumeArray[0] = str(currVolume);
+      saveStrings(volumePath, currVolumeArray);
+
+      println("currReed after increase: " + currReed);
+      println("preReed after increase: " + preReed);
+    }
+
+    if ((currReed == 4 && preReed == 1) || (currReed == 1 && preReed == 2) 
+      || (currReed == 2 && preReed == 3) || (currReed == 3 && preReed == 4)) {
+      print("decrease volume\n");
+      currVolume -= 20;
+      if (currVolume < 0) currVolume = 0;
+      currVolumeArray[0] = str(currVolume);
+      saveStrings(volumePath, currVolumeArray);
+    }
+
+    if (currReed != 0) preReed = currReed; //last reed sensor to be activated
+    currReed = 0;
+  }
+}
+
