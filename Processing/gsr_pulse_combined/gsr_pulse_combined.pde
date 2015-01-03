@@ -221,9 +221,9 @@ void serialEvent(Serial myPort) {
     if (inData.charAt(0) == 'A') {          // skin sensor data
       inData = inData.substring(1);        // cut off the leading 'A'
       gsr = int(inData);                   // convert the string to usable int
-      if (recordingTime < 5000) {  //for some reason this is causing pulsesensor to crash
+      if (!pulseRecorded) {
+        gsrValues[gsrCount] = str(gsr); //this line is causing pulsesensor to crash after a bit
         gsrCount++;
-        gsrValues[gsrCount-1] = str(gsr);
       }
     }
 
@@ -255,7 +255,7 @@ void serialEvent(Serial myPort) {
 void determineProfile(int gsr) {
   saveStrings("gsrValues.txt", gsrValues); //saves gsrValues in a file for debugging purposes
 
-  //do calcultions with gsrValues-----------
+    //do calcultions with gsrValues-----------
   int gsrCur = 0;
   float gsrAvg = 0;
   int gsrLen = 0;
@@ -282,7 +282,7 @@ void determineProfile(int gsr) {
   saveStrings(pulseFilename, pulseArr);
   pulseRecorded = true;
 
-  if (gsrAvg >= 1.1 && BPM >= 80 && gsrFluct >= 10) {
+  if (gsrAvg >= 1.2 && BPM >= 80 && gsrFluct >= 8) {
     myPort.write(114); //red
     print("you are agitated\n");
     //print("gsrAvg: " + gsrAvg + "\n");
