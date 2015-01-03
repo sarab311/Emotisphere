@@ -298,7 +298,7 @@ void determineProfile(int gsr) {
     profRecorded = true;
   }
 
-  //how many recordings are saved?
+  //how many recordings exist so far?
   int recnumber_temp = int(loadStrings(recNumFile)[0]);
   recnumber_temp += 1;
   String[] recnumber = new String[] {

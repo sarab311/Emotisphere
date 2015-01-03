@@ -4,7 +4,7 @@
 //key for characters in serial port: A = gsr value, S = pulse signal, B = pulse BPM
 //Q = pulse IBI, R = red led, G = green led, B = blue led, W = white led, w-z = reed sensors
 
-//reed sensor Arduino pins
+//reed sensor Arduino pins(will need to change to add accelerometer)
 int pushButtonA = 12;
 int pushButtonB = 11;
 int pushButtonC = 9;
@@ -23,7 +23,7 @@ volatile int BPM;                   // used to hold the pulse rate
 volatile int Signal;                // holds the incoming raw data
 volatile int IBI = 600;             // holds the time between beats, must be seeded! 
 volatile boolean Pulse = false;     // true when pulse wave is high, false when it's low
-volatile boolean QS = false;        // becomes true when Arduoino finds a beat.
+volatile boolean QS = false;        // becomes true when Arduino finds a beat.
 
 void setup() { 
   Serial.begin(115200);
